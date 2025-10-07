@@ -1,0 +1,7 @@
+@AnalyzerWebApi_HostAddress = https://localhost:7284
+
+GET {{AnalyzerWebApi_HostAddress}}/weatherforecast/
+Authorization: Bearer <token>
+Accept: application/json
+
+###
