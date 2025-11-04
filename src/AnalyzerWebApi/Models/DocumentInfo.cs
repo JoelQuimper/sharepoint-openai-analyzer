@@ -2,9 +2,9 @@ namespace AnalyzerWebApi.Models
 {
     public class DocumentInfo
     {
-        public string DriveId { get; set; }
-        public string DriveItemId { get; set; }
-        public string UserPrompt { get; set; }
-        public string ExpectedJsonSchema { get; set; }
+        public required string DriveId { get; set; }
+        public required string DriveItemId { get; set; }
+        public required string UserPrompt { get; set; }
+        public required string ExpectedJsonSchema { get; set; }
     }
 }
