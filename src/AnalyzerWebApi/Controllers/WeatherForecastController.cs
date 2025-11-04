@@ -24,9 +24,10 @@ public class WeatherForecastController : ControllerBase
     [HttpGet(Name = "GetWeatherForecast")]
     public IEnumerable<WeatherForecast> Get()
     {
+        var date = DateOnly.FromDateTime(DateTime.Now);
         return Enumerable.Range(1, 5).Select(index => new WeatherForecast
         {
-            Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+            Date = date.AddDays(index),
             TemperatureC = Random.Shared.Next(-20, 55),
             Summary = Summaries[Random.Shared.Next(Summaries.Length)]
         })
