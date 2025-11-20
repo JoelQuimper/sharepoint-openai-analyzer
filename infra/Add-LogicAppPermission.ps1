@@ -1,4 +1,4 @@
-$ManagedIdentityId = "00000000-0000-0000-0000-000000000000" # Replace with your Managed Identity's object ID
+$ManagedIdentityObjectId = "00000000-0000-0000-0000-000000000000" # Replace with your Managed Identity's object ID
 $ApiAppId = "00000000-0000-0000-0000-000000000000" # Replace with your API's Application (client) ID
 $PermissionValue = "AI.Read"
 $GraphBaseUrl = "https://graph.microsoft.com/v1.0"
@@ -13,5 +13,5 @@ $apiEnterpriseAppId = $apiApp.id
 $appRoleId = $apiApp.appRoles | Where-Object { $_.value -eq $PermissionValue -and $_.allowedMemberTypes -contains "Application" } | Select-Object -ExpandProperty id
 
 # Assign the app role to the managed identity
-$url = "$($GraphBaseUrl)/servicePrincipals/$($ManagedIdentityId)/appRoleAssignments"
-az rest --method POST --url $url --body "{'principalId': '$ManagedIdentityId','resourceId': '$apiEnterpriseAppId','appRoleId': '$appRoleId'}"
+$url = "$($GraphBaseUrl)/servicePrincipals/$($ManagedIdentityObjectId)/appRoleAssignments"
+az rest --method POST --url $url --body "{'principalId': '$ManagedIdentityObjectId','resourceId': '$apiEnterpriseAppId','appRoleId': '$appRoleId'}"
