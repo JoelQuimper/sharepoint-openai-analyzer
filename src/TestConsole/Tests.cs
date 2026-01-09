@@ -36,19 +36,34 @@ public class Tests
         - Do not use knowledge that is not in the document";
     }
 
-    private string GetUserPrompt(string documentType, string jsonSchema)
+    private string GetUserPrompt()
     {
-        return $@"Document Type: {documentType}
+        return $@"Document Type: Invoice
 
         Please analyze the document and extract all information according to the following JSON schema:
 
         JSON SCHEMA:
-        {jsonSchema}
+        {GetJsonSchema()}
 
         EXTRACTION INSTRUCTIONS:
         1. Use file_search to retrieve the document content
         2. Map the document fields to the schema fields
         3. Return ONLY the JSON object with no additional text or formatting";
+    }
+
+    private string GetJsonSchema()
+    {
+        return @"{
+            ""type"": ""object"",
+            ""properties"": {
+                ""invoiceNumber"": { ""type"": ""string"" },
+                ""invoiceDate"": { ""type"": ""string"", ""format"": ""date"" },
+                ""purchaseOrderNumber"": { ""type"": ""integer"", ""minimum"": 160000000, ""maximum"": 160999999 },
+                ""supplierName"": { ""type"": ""string"" },
+                ""totalAmount"": { ""type"": ""number"", ""minimum"": 0 }
+            },
+            ""required"": [ ""invoiceNumber"", ""invoiceDate"", ""purchaseOrderNumber"", ""supplierName"", ""totalAmount"" ]
+        }";
     }
 
     public async Task RunAIFoundryTestAsync(IConfigurationRoot configuration)
@@ -65,22 +80,8 @@ public class Tests
         Console.WriteLine($"Copied file to: {copiedFilePath}");
 
         // Define document type and schema
-        string documentType = "Invoice";
-        var jsonSchema = @"{
-            ""type"": ""object"",
-            ""properties"": {
-                ""invoiceNumber"": { ""type"": ""string"" },
-                ""invoiceDate"": { ""type"": ""string"", ""format"": ""date"" },
-                ""purchaseOrderNumber"": { ""type"": ""integer"", ""minimum"": 160000000, ""maximum"": 160999999 },
-                ""supplierName"": { ""type"": ""string"" },
-                ""totalAmount"": { ""type"": ""number"", ""minimum"": 0 }
-            },
-            ""required"": [ ""invoiceNumber"", ""invoiceDate"", ""purchaseOrderNumber"", ""supplierName"", ""totalAmount"" ]
-        }";
-
         var systemPrompt = GetSystemPrompt();
-        var userPrompt = GetUserPrompt(documentType, jsonSchema);
-        
+        var userPrompt = GetUserPrompt();
 
         var endpoint = configuration["AIFoundryEndpoint"];
         var deployment = "gpt-4.1";
@@ -240,20 +241,8 @@ public class Tests
         {
             DriveId = driveId,
             DriveItemId = driveItemId,
-            UserPrompt = "The provided document is an invoice. You are a manager and must analyze the invoice and extract the information according to the provided JSON schema.",
-            ExpectedJsonSchema = @"
-            {
-                ""type"": ""object"",
-                ""properties"": {
-                    ""invoiceNumber"": { ""type"": ""string"" },
-                    ""invoiceDate"": { ""type"": ""string"", ""format"": ""date"" },
-                    ""purchaseOrderNumber"": { ""type"": ""integer"", ""minimum"": 160000000, ""maximum"": 160999999 },
-                    ""supplierName"": { ""type"": ""string"" },
-                    ""totalAmount"": { ""type"": ""number"", ""minimum"": 0 }
-                },
-                ""required"": [ ""invoiceNumber"", ""invoiceDate"", ""purchaseOrderNumber"", ""supplierName"", ""totalAmount"" ]
-            }
-            "
+            UserPrompt = GetUserPrompt(),
+            ExpectedJsonSchema = GetJsonSchema()
         };
         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
         var apiResponse = await httpClient.PostAsJsonAsync(apiUrl, body);
