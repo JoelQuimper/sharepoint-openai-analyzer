@@ -68,7 +68,7 @@ public class Tests
 
     public async Task RunAIFoundryTestAsync(IConfigurationRoot configuration)
     {
-        var uniqueId = Guid.NewGuid().ToString().Replace("-", "").Substring(0, 8);
+        var uniqueId = Guid.NewGuid().ToString().Substring(0, 8);
         Console.WriteLine($"Starting document processing with Unique ID: {uniqueId}");
 
         var masterFilePath = configuration["LocalFilePath"];
