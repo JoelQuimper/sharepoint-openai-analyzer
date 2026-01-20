@@ -1,4 +1,4 @@
-using Azure.AI.OpenAI;
+using AnalyzerWebApi.Service;
 using Azure.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Graph;
@@ -29,17 +29,15 @@ builder.Services.AddScoped(sp =>
 
     return new GraphServiceClient(clientSecretCredential, graphScopes);
 });
-
-builder.Services.AddScoped(serviceProvider =>
-{
-    var endpoint = builder.Configuration["AzureOpenAI:Endpoint"];
-    var deployment = builder.Configuration["AzureOpenAI:DeploymentName"];
-    var credential = new DefaultAzureCredential();
-
-    var azureClient = new AzureOpenAIClient(new Uri(endpoint), credential);
-    var chatClient = azureClient.GetChatClient(deployment);
-    return chatClient;
-});
+    
+builder.Services.AddScoped<IDocumentService, DocumentService>(
+    sp =>
+        new DocumentService(
+            builder.Configuration["MicrosoftFoundry:Endpoint"] ?? throw new InvalidOperationException("MicrosoftFoundry:Endpoint is not configured."),
+            builder.Configuration["MicrosoftFoundry:DeploymentName" ] ?? throw new InvalidOperationException("MicrosoftFoundry:DeploymentName is not configured."),
+            sp.GetRequiredService<ILogger<DocumentService>>()
+        )
+);
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

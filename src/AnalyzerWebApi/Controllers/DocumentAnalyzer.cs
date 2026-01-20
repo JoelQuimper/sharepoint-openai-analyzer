@@ -1,8 +1,8 @@
 using AnalyzerWebApi.Models;
+using AnalyzerWebApi.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Graph;
-using OpenAI.Chat;
 
 namespace AnalyzerWebApi.Controllers
 {
@@ -13,12 +13,12 @@ namespace AnalyzerWebApi.Controllers
     {
         private readonly ILogger<DocumentAnalyzerController> _logger;
         private readonly GraphServiceClient _graphClient;
-        private readonly ChatClient _chatClient;
+        private readonly IDocumentService _documentService;
 
-        public DocumentAnalyzerController(GraphServiceClient graphClient, ChatClient chatClient, ILogger<DocumentAnalyzerController> logger)
+        public DocumentAnalyzerController(GraphServiceClient graphClient, IDocumentService documentService, ILogger<DocumentAnalyzerController> logger)
         {
             _graphClient = graphClient;
-            _chatClient = chatClient;
+            _documentService = documentService;
             _logger = logger;
         }
 
@@ -32,36 +32,27 @@ namespace AnalyzerWebApi.Controllers
 
             try
             {
+                // Retrieve the file metadata from SharePoint using Microsoft Graph
+                var fileInfo = await _graphClient.Drives[documentInfo.DriveId].Items[documentInfo.DriveItemId].GetAsync();
+                var mimeType = fileInfo?.File?.MimeType;
+                _logger.LogInformation($"Retrieved file: {fileInfo?.Name}, Type: {mimeType}");
+
+                // Download the file content                
                 var file = await _graphClient.Drives[documentInfo.DriveId].Items[documentInfo.DriveItemId].Content.GetAsync();
-                
                 var imageBytes = BinaryData.FromStream(file!);
 
-                var systemMessage = $"Analyze the attached document and extract the information as requested by the user. " +
-                $"You must follow the JSON schema below and ensure that all required information is included. {documentInfo.ExpectedJsonSchema} ";
-
-                var completionOptions = new ChatCompletionOptions
-                {
-                    ResponseFormat= ChatResponseFormat.CreateJsonObjectFormat()
-                };
-
-                var messages = new List<ChatMessage>
-                {
-                    new SystemChatMessage(systemMessage),
-                    new UserChatMessage(new List<ChatMessageContentPart>
-                    {
-                        ChatMessageContentPart.CreateTextPart(documentInfo.UserPrompt),
-                        ChatMessageContentPart.CreateImagePart(imageBytes, "image/jpeg")
-                    })
-                };
-
-                var result = await _chatClient.CompleteChatAsync(messages, completionOptions);
-
-                var jsonResponse = result.Value.Content[0].Text;
-                _logger.LogInformation($"JSON Response: {jsonResponse}");
-
+                // Call the DocumentService to analyze the document or image based on its mime type
+                var result = await _documentService.AnalyzeDocumentAsync(
+                    documentBytes: imageBytes,
+                    documentMimeType: mimeType ?? "application/octet-stream",
+                    expectedJsonSchema: documentInfo.ExpectedJsonSchema,
+                    userInstructions: documentInfo.UserPrompt
+                );
+                
+                _logger.LogDebug($"Analysis Result: {result}");
                 _logger.LogInformation("Document processing completed.");
                 
-                return Ok(jsonResponse);
+                return Ok(result);
             }
             catch (Exception ex)
             {
