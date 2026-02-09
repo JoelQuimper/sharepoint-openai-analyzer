@@ -7,7 +7,9 @@ builder.SetBasePath(Directory.GetCurrentDirectory())
 IConfigurationRoot configuration = builder.Build();
 
 var tests = new Tests();
-//await tests.RunCallApiAsync(configuration);
-await tests.RunAIFoundryTestAsync(configuration);
+await tests.RunCallApiAsync(configuration);
+//await tests.RunAIFoundryTestVectorStoreAsync(configuration);
+//await tests.RunAIFoundryTestCodeInterpreterAsync(configuration);
+//await tests.RunAIFoundryTestVisionAsync(configuration);
 //await tests.CleanUpAIFoundryProjectAsync(configuration);
 
