@@ -420,3 +420,4 @@ appsettings.*.json
 infra/Add-LogicAppPermission.*.ps1
 infra/Start-Devtunnel.*.ps1
 scrapbook.ps1
+data/*

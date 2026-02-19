@@ -6,10 +6,10 @@ builder.SetBasePath(Directory.GetCurrentDirectory())
        .AddJsonFile("appsettings.Development.json", optional: false, reloadOnChange: true);
 IConfigurationRoot configuration = builder.Build();
 
-var tests = new Tests();
-await tests.RunCallApiAsync(configuration);
-//await tests.RunAIFoundryTestVectorStoreAsync(configuration);
-//await tests.RunAIFoundryTestCodeInterpreterAsync(configuration);
-//await tests.RunAIFoundryTestVisionAsync(configuration);
-//await tests.CleanUpAIFoundryProjectAsync(configuration);
-
+// await TestAPI.RunCallApiAsync(configuration);
+// await TestAgentClassic.RunAIFoundryTestVectorStoreAsync(configuration);
+// await TestAgentClassic.RunAIFoundryTestCodeInterpreterAsync(configuration);
+// await TestAgentNew.RunFileSearchToolTestAsync(configuration);
+await TestAgentNew.RunImageAnalysisToolTestAsync(configuration);
+await TestAgentNew.RunFileAnalysisToolTestAsync(configuration);
+// await TestAgentClassic.CleanUpAIFoundryProjectAsync(configuration);
