@@ -1,3 +1,4 @@
+using Azure;
 using Azure.AI.Projects;
 using Azure.AI.Projects.OpenAI;
 using Azure.Identity;
@@ -20,7 +21,6 @@ public class TestAgentNew
         string agentName = "TestVectorStoreAgent";
         var uniqueId = Guid.NewGuid().ToString().Substring(0, 8);
         Console.WriteLine($"Starting new agent {agentName}...  File to be uploaded: {filePath}, run identifier: {uniqueId}");
-
         AIProjectClient projectClient = new(new Uri(projectEndpoint), new DefaultAzureCredential());
 
         // Upload a file to be used in the VectorStore tool
@@ -205,4 +205,22 @@ public class TestAgentNew
         await projectClient.Agents.DeleteAgentAsync(result.Value.Name);
         Console.WriteLine($"Deleted agent with name: {result.Value.Name}");
     }    
+
+    public static async Task RunBasicAgentInfoTestAsync(IConfigurationRoot configuration)
+    {
+        string projectEndpoint = configuration["AIFoundryEndpoint"];
+
+        string agentName = "DocAnalyzer";
+        AIProjectClient projectClient = new(new Uri(projectEndpoint), new DefaultAzureCredential());
+
+        var agentRecord = await projectClient.Agents.GetAgentAsync(agentName);
+
+        var agentDefinition = (PromptAgentDefinition)agentRecord.Value.Versions.Latest.Definition;
+        
+        // Log all fields of agentDefinition
+        Console.WriteLine($"Agent Instructions: {agentDefinition.Instructions}");
+        Console.WriteLine($"Agent Model: {agentDefinition.Model}");
+        Console.WriteLine($"Agent Temperature: {agentDefinition.Temperature}");
+        Console.WriteLine($"Agent TopP: {agentDefinition.TopP}");        
+    }
 }

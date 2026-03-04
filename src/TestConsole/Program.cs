@@ -7,9 +7,12 @@ builder.SetBasePath(Directory.GetCurrentDirectory())
 IConfigurationRoot configuration = builder.Build();
 
 // await TestAPI.RunCallApiAsync(configuration);
+
 // await TestAgentClassic.RunAIFoundryTestVectorStoreAsync(configuration);
 // await TestAgentClassic.RunAIFoundryTestCodeInterpreterAsync(configuration);
-// await TestAgentNew.RunFileSearchToolTestAsync(configuration);
-await TestAgentNew.RunImageAnalysisToolTestAsync(configuration);
-await TestAgentNew.RunFileAnalysisToolTestAsync(configuration);
 // await TestAgentClassic.CleanUpAIFoundryProjectAsync(configuration);
+
+await TestAgentNew.RunFileSearchToolTestAsync(configuration);
+// await TestAgentNew.RunImageAnalysisToolTestAsync(configuration);
+// await TestAgentNew.RunFileAnalysisToolTestAsync(configuration);
+// await TestAgentNew.RunBasicAgentInfoTestAsync(configuration);
