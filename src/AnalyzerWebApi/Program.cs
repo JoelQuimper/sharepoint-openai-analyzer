@@ -1,4 +1,4 @@
-using AnalyzerWebApi.Service;
+using AnalyzerWebApi.Services;
 using Azure.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Graph;
@@ -30,12 +30,12 @@ builder.Services.AddScoped(sp =>
     return new GraphServiceClient(clientSecretCredential, graphScopes);
 });
     
-builder.Services.AddScoped<IDocumentService, DocumentService>(
+builder.Services.AddScoped<IFoundryServices, FoundryServices>(
     sp =>
-        new DocumentService(
+        new FoundryServices(
             builder.Configuration["MicrosoftFoundry:Endpoint"] ?? throw new InvalidOperationException("MicrosoftFoundry:Endpoint is not configured."),
-            builder.Configuration["MicrosoftFoundry:DeploymentName" ] ?? throw new InvalidOperationException("MicrosoftFoundry:DeploymentName is not configured."),
-            sp.GetRequiredService<ILogger<DocumentService>>()
+            builder.Configuration["MicrosoftFoundry:AgentName"] ?? throw new InvalidOperationException("MicrosoftFoundry:AgentName is not configured."),
+            sp.GetRequiredService<ILogger<FoundryServices>>()
         )
 );
 

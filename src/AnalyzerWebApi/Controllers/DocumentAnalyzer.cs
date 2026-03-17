@@ -1,5 +1,5 @@
 using AnalyzerWebApi.Models;
-using AnalyzerWebApi.Service;
+using AnalyzerWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Graph;
@@ -13,12 +13,12 @@ namespace AnalyzerWebApi.Controllers
     {
         private readonly ILogger<DocumentAnalyzerController> _logger;
         private readonly GraphServiceClient _graphClient;
-        private readonly IDocumentService _documentService;
+        private readonly IFoundryServices _foundryServices;
 
-        public DocumentAnalyzerController(GraphServiceClient graphClient, IDocumentService documentService, ILogger<DocumentAnalyzerController> logger)
+        public DocumentAnalyzerController(GraphServiceClient graphClient, IFoundryServices foundryServices, ILogger<DocumentAnalyzerController> logger)
         {
             _graphClient = graphClient;
-            _documentService = documentService;
+            _foundryServices = foundryServices;
             _logger = logger;
         }
 
@@ -34,17 +34,19 @@ namespace AnalyzerWebApi.Controllers
             {
                 // Retrieve the file metadata from SharePoint using Microsoft Graph
                 var fileInfo = await _graphClient.Drives[documentInfo.DriveId].Items[documentInfo.DriveItemId].GetAsync();
-                var mimeType = fileInfo?.File?.MimeType;
-                _logger.LogInformation($"Retrieved file: {fileInfo?.Name}, Type: {mimeType}");
+                var mimeType = fileInfo?.File?.MimeType ?? "application/octet-stream";
+                var fileName = fileInfo?.Name ?? "unknown";
+                _logger.LogInformation($"Retrieved file: {fileName}, Type: {mimeType}");
 
                 // Download the file content                
                 var file = await _graphClient.Drives[documentInfo.DriveId].Items[documentInfo.DriveItemId].Content.GetAsync();
-                var imageBytes = BinaryData.FromStream(file!);
+                var documentBytes = BinaryData.FromStream(file!);
 
-                // Call the DocumentService to analyze the document or image based on its mime type
-                var result = await _documentService.AnalyzeDocumentAsync(
-                    documentBytes: imageBytes,
-                    documentMimeType: mimeType ?? "application/octet-stream",
+                // Route to appropriate Foundry agent based on document type
+                string result = await RouteDocumentToFoundryAgent(
+                    documentBytes: documentBytes,
+                    fileName: fileName,
+                    documentMimeType: mimeType,
                     expectedJsonSchema: documentInfo.ExpectedJsonSchema,
                     userInstructions: documentInfo.UserPrompt
                 );
@@ -62,6 +64,26 @@ namespace AnalyzerWebApi.Controllers
                     return NotFound("The specified document was not found in SharePoint.");
                 return StatusCode(500, "An unknown error occurred while processing the document.");
             }
+        }
+
+        private async Task<string> RouteDocumentToFoundryAgent(BinaryData documentBytes, string fileName, string documentMimeType, string expectedJsonSchema, string userInstructions)
+        {
+            _logger.LogInformation($"Routing document {fileName} with MIME type {documentMimeType}");
+
+            return documentMimeType switch
+            {
+                // Images: use analyse image agent
+                string type when type.StartsWith("image/") =>
+                    await _foundryServices.AnalyzeImageAsync(documentBytes, fileName, documentMimeType, expectedJsonSchema, userInstructions),
+
+                // PDFs: use analyse file agent
+                "application/pdf" =>
+                    await _foundryServices.AnalyzeDocumentAsync(documentBytes, fileName, documentMimeType, expectedJsonSchema, userInstructions),
+
+                // All other types: use file search agent THIS SHOULD BE RESTRICTED SOME MIMETYPE ARE NOT SUPPORTED.  I have not implemented that check yet.
+                _ =>
+                    await _foundryServices.AnalyzeDocumentWithFileSearchAsync(documentBytes, fileName, documentMimeType, expectedJsonSchema, userInstructions)
+            };
         }
     }
 }

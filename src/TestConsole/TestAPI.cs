@@ -54,7 +54,7 @@ public static class TestAPI
         string clientId = configuration["ClientId"];
         string clientSecret = configuration["ClientSecret"];
         string driveId = configuration["DriveId"];
-        string driveItemId = configuration["DriveItemId_JPG"];
+        string driveItemId = configuration["DriveItemId_PDF"];
         string scope = configuration["Scope"];
         var tokenEndpoint = $"https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/token";
 
