@@ -29,15 +29,16 @@ builder.Services.AddScoped(sp =>
 
     return new GraphServiceClient(clientSecretCredential, graphScopes);
 });
-    
-builder.Services.AddScoped<IFoundryServices, FoundryServices>(
-    sp =>
-        new FoundryServices(
-            builder.Configuration["MicrosoftFoundry:Endpoint"] ?? throw new InvalidOperationException("MicrosoftFoundry:Endpoint is not configured."),
-            builder.Configuration["MicrosoftFoundry:AgentName"] ?? throw new InvalidOperationException("MicrosoftFoundry:AgentName is not configured."),
-            sp.GetRequiredService<ILogger<FoundryServices>>()
-        )
-);
+
+// Add Foundry services
+builder.Services.AddScoped<IFoundryServices, FoundryServices>(sp =>
+{
+    var endpoint = builder.Configuration["MicrosoftFoundry:Endpoint"] ?? throw new InvalidOperationException("MicrosoftFoundry:Endpoint is not configured.");
+    var agentName = builder.Configuration["MicrosoftFoundry:AgentName"] ?? throw new InvalidOperationException("MicrosoftFoundry:AgentName is not configured.");
+    var logger = sp.GetRequiredService<ILogger<FoundryServices>>();
+
+    return new FoundryServices(endpoint, agentName, logger);
+});
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
