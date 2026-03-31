@@ -17,7 +17,7 @@ $package = "$solutionPath\AnalyzerWebApi.zip"
 dotnet build $solutionPath\AnalyzerWebApi\AnalyzerWebApi.csproj
 dotnet publish $solutionPath\AnalyzerWebApi\AnalyzerWebApi.csproj -c Release
 
-$releasePath = "$solutionPath\AnalyzerWebApi\bin\Release\net8.0\publish"
+$releasePath = "$solutionPath\AnalyzerWebApi\bin\Release\net10.0\publish"
 
 # Remove appsettings.Development.json if it exists in the publish folder
 "Verifying presence of appsettings.Development.json for removal..."
