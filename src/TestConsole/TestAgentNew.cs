@@ -1,4 +1,4 @@
-using Azure;
+using System.ClientModel.Primitives;
 using Azure.AI.Projects;
 using Azure.AI.Projects.OpenAI;
 using Azure.Identity;
@@ -21,7 +21,9 @@ public class TestAgentNew
         string agentName = "TestVectorStoreAgent";
         var uniqueId = Guid.NewGuid().ToString().Substring(0, 8);
         Console.WriteLine($"Starting new agent {agentName}...  File to be uploaded: {filePath}, run identifier: {uniqueId}");
-        AIProjectClient projectClient = new(new Uri(projectEndpoint), new DefaultAzureCredential());
+        AIProjectClientOptions clientOptions = new ();
+        clientOptions.AddPolicy(new LoggingPolicy(), PipelinePosition.PerCall);
+        AIProjectClient projectClient = new(new Uri(projectEndpoint), new DefaultAzureCredential(), clientOptions);
 
         // Upload a file to be used in the VectorStore tool
         var uploadedFile = await projectClient.OpenAI.GetOpenAIFileClient().UploadFileAsync(
