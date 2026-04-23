@@ -1,6 +1,7 @@
 using AnalyzerWebApi.Services;
+using Azure.AI.Extensions.OpenAI;
 using Azure.AI.Projects;
-using Azure.AI.Projects.OpenAI;
+using Azure.AI.Projects.Agents;
 using Azure.Identity;
 using OpenAI.Files;
 using OpenAI.Responses;
@@ -11,7 +12,6 @@ public class FoundryServices : IFoundryServices
     private readonly string _endpoint;
     private readonly string _baseAgentName;
     private readonly AIProjectClient _projectClient;
-    private readonly AgentRecord _agentRecord;
     private readonly ProjectResponsesClient _baseResponseClient;
     private readonly ILogger<FoundryServices> _logger;
 
@@ -25,11 +25,8 @@ public class FoundryServices : IFoundryServices
 
         _projectClient = new AIProjectClient(new Uri(_endpoint), new DefaultAzureCredential());
 
-        _agentRecord = _projectClient.Agents.GetAgent(_baseAgentName);
-        _logger.LogDebug("Agent retrieved (name: {Name}, id: {Id})", _agentRecord.Name, _agentRecord.Id);
-
-        _baseResponseClient = _projectClient.OpenAI.GetProjectResponsesClientForAgent(_agentRecord);
-        _logger.LogDebug("BaseResponseClient initialized for agent");
+        _baseResponseClient = _projectClient.OpenAI.GetProjectResponsesClientForAgent(_baseAgentName);
+        _logger.LogDebug("BaseResponseClient initialized for agent {BaseAgentName}", _baseAgentName);
     }
 
     public async Task<string> AnalyzeDocumentWithFileSearchAsync(BinaryData documentBytes, string fileName, string documentMimeType, string expectedJsonSchema, string userInstructions)
@@ -57,7 +54,8 @@ public class FoundryServices : IFoundryServices
         _logger.LogDebug("Created VectorStore with ID: {VectorStoreId}", vectorStore.Value.Id);
         
         // Create the agent with the file-search tool that uses the VectorStore created above.
-        var baseAgentDefinition = (PromptAgentDefinition)_agentRecord.Versions.Latest.Definition;
+        var baseAgentRecord = await _projectClient.Agents.GetAgentAsync(_baseAgentName);
+        var baseAgentDefinition = (PromptAgentDefinition)baseAgentRecord.Value.GetLatestVersion().Definition;
         var newAgentDefinition = new PromptAgentDefinition(model: baseAgentDefinition.Model)
         {
             Instructions = baseAgentDefinition.Instructions,
@@ -151,7 +149,7 @@ public class FoundryServices : IFoundryServices
                 ResponseItem.CreateUserMessageItem(
                 [
                     ResponseContentPart.CreateInputTextPart(prompt),
-                    ResponseContentPart.CreateInputImagePart(documentBytes, documentMimeType)
+                    ResponseContentPart.CreateInputImagePart(documentBytes)
                 ])
             },
         };

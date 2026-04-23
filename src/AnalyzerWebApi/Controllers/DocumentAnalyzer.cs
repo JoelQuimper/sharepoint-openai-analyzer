@@ -40,7 +40,7 @@ namespace AnalyzerWebApi.Controllers
 
                 // Download the file content                
                 var file = await _graphClient.Drives[documentInfo.DriveId].Items[documentInfo.DriveItemId].Content.GetAsync();
-                var documentBytes = BinaryData.FromStream(file!);
+                var documentBytes = BinaryData.FromStream(file!, mimeType);
 
                 // Route to appropriate Foundry agent based on document type
                 string result = await RouteDocumentToFoundryAgent(
