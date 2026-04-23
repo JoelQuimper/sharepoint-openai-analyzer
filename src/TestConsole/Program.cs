@@ -1,17 +1,18 @@
 ﻿using Microsoft.Extensions.Configuration;
-using TestConsole.AnalyzerApi;
-using TestConsole.NewFoundryAgents;
+using TestConsole.Tests.AnalyzerApi;
+using TestConsole.Tests.ClassicAgents;
+using TestConsole.Tests.NewFoundryAgents;
 
 var builder = new ConfigurationBuilder();
 builder.SetBasePath(Directory.GetCurrentDirectory())
        .AddJsonFile("appsettings.Development.json", optional: false, reloadOnChange: true);
 IConfigurationRoot configuration = builder.Build();
 
-await new APITest(configuration).RunAsync();
+// await new APITest(configuration).RunAsync();
 
-// await TestAgentClassic.RunAIFoundryTestVectorStoreAsync(configuration);
-// await TestAgentClassic.RunAIFoundryTestCodeInterpreterAsync(configuration);
-// await TestAgentClassic.CleanUpAIFoundryProjectAsync(configuration);
+await new VectorStoreAgentTest(configuration).RunAsync();
+await new CodeInterpreterAgentTest(configuration).RunAsync();
+// await new CleanUpAIFoundryProjectTest(configuration).RunAsync();
 
 // await new FileSearchToolTest(configuration).RunAsync();
 // await new ImageAnalysisToolTest(configuration).RunAsync();

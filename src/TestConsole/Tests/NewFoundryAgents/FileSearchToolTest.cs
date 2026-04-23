@@ -9,7 +9,7 @@ using OpenAI.Responses;
 using OpenAI.VectorStores;
 using TestConsole.Infra;
 
-namespace TestConsole.NewFoundryAgents;
+namespace TestConsole.Tests.NewFoundryAgents;
 
 public class FileSearchToolTest : BaseTest
 {

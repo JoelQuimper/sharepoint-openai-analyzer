@@ -4,7 +4,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using TestConsole.Infra;
 
-namespace TestConsole.AnalyzerApi;
+namespace TestConsole.Tests.AnalyzerApi;
 
 public class APITest : BaseTest
 {

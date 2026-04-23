@@ -4,7 +4,7 @@ using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using TestConsole.Infra;
 
-namespace TestConsole.NewFoundryAgents;
+namespace TestConsole.Tests.NewFoundryAgents;
 
 public class BasicAgentInfoTest : BaseTest
 {

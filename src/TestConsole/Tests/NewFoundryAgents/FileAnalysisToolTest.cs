@@ -6,13 +6,13 @@ using Microsoft.Extensions.Configuration;
 using OpenAI.Responses;
 using TestConsole.Infra;
 
-namespace TestConsole.NewFoundryAgents;
+namespace TestConsole.Tests.NewFoundryAgents;
 
-public class ImageAnalysisToolTest : BaseTest
+public class FileAnalysisToolTest : BaseTest
 {
-    protected override string TestName => "RunImageAnalysisToolTestAsync";
+    protected override string TestName => "RunFileAnalysisToolTestAsync";
 
-    public ImageAnalysisToolTest(IConfigurationRoot configuration) : base(configuration)
+    public FileAnalysisToolTest(IConfigurationRoot configuration) : base(configuration)
     {
     }
 
@@ -20,10 +20,12 @@ public class ImageAnalysisToolTest : BaseTest
     {
         string projectEndpoint = Configuration["AIFoundryEndpoint"];
         var modelName = Configuration["ModelDeployement"];
-        var filePath = Configuration["LocalFilePath_PNG"];
-        var fileType = "image/png";
+        var filePath = Configuration["LocalFilePath_PDF"];
+        // In my test, this was only working using pdf. Maybe other models/config would behave differently,
+        // but I am hardcoding this for now to make sure the test runs. We can make this more dynamic later.
+        var fileType = "application/pdf";
 
-        string agentName = "TestImageAgent";
+        string agentName = "TestFileAgent";
         var uniqueId = Guid.NewGuid().ToString().Substring(0, 8);
         LogInfo($"Starting test for {agentName}...  File to be uploaded: {filePath}, run identifier: {uniqueId}");
 
@@ -35,8 +37,8 @@ public class ImageAnalysisToolTest : BaseTest
         // Create the agent
         var agentDefinition = new PromptAgentDefinition(model: modelName)
         {
-            Instructions = @"You are a helpful assistant that can answer questions about the content of an image provided 
-                by the user. Answer the user's question based on that image information."
+            Instructions = @"You are a helpful assistant that can answer questions about the content of the file provided 
+                by the user. Answer the user's question based on that file information."
         };
 
         var result = await projectClient.Agents.CreateAgentVersionAsync(
@@ -52,22 +54,20 @@ public class ImageAnalysisToolTest : BaseTest
             defaultAgent: result.Value.Name,
             defaultConversationId: conversation.Id);
 
-        LogInfo($"Image size: {fileData.ToMemory().Length} bytes");
-
-        ResponseResult response = await responsesClient.CreateResponseAsync(
-            new CreateResponseOptions
+        CreateResponseOptions options = new CreateResponseOptions
+        {
+            InputItems =
             {
-                InputItems =
-                {
-                    ResponseItem.CreateUserMessageItem(new[]
-                    {
-                        ResponseContentPart.CreateInputTextPart("Please analyze and summarize the attached image."),
-                        ResponseContentPart.CreateInputImagePart(fileData, ResponseImageDetailLevel.High)
-                    })
-                }
-            }
-        );
+                ResponseItem.CreateUserMessageItem(
+                [
+                    ResponseContentPart.CreateInputTextPart("Please analyze and summarize the attached file available."),
+                    ResponseContentPart.CreateInputFilePart(fileData, fileType, Path.GetFileName(filePath))
+                ])
+            },
+        };
 
+        // Chat with the agent to answer questions
+        ResponseResult response = await responsesClient.CreateResponseAsync(options);
         LogInfo(response.GetOutputText());
 
         // Cleanup
