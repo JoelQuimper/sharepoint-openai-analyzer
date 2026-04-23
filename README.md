@@ -31,6 +31,7 @@ A console application for:
 - Testing document analysis functionality
 - Running quick manual tests
 - Debugging and development
+- Running integration tests against the API
 
 ## Prerequisites
 
@@ -52,12 +53,6 @@ cd sharepoint-openai-analyzer
 ```
 
 ### 2. Configure Azure Resources
-
-#### Create Entra Application
-```powershell
-# Use the provided infrastructure scripts to set up the application
-./infra/Start-Devtunnel.ps1  # Set up dev tunnel for local testing
-```
 
 #### Configure Application Settings
 Update `appsettings.Development.json` with your Azure configuration:
@@ -88,27 +83,9 @@ dotnet build
 dotnet run --project AnalyzerWebApi/AnalyzerWebApi.csproj
 ```
 
-#### Using Visual Studio
-```bash
-# Open the solution
-open src/Analyzer.sln
-
-## Configuration Details
-
-### Environment Variables
-Key configuration values that can be set as environment variables:
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `AzureAd:TenantId` | Microsoft Entra ID tenant ID | Yes |
-| `AzureAd:ClientId` | Azure AD application client ID | Yes |
-| `AzureAd:ClientSecret` | Azure AD application secret | Yes |
-| `MicrosoftFoundry:Endpoint` | Azure AI Foundry endpoint URL | Yes |
-| `MicrosoftFoundry:AgentName` | AI agent name to use for analysis | Yes |
-
 ## Deployment
 
-### Deploy to Azure
+### Deploy web api to Azure
 
 ```powershell
 # Using the provided deployment script
@@ -119,35 +96,6 @@ Key configuration values that can be set as environment variables:
 - Azure subscription with appropriate permissions
 - Resource group created
 - AppService plan and Web App created for hosting the API
-
-## Testing
-
-### Using Test Console App
-
-```bash
-cd src/TestConsole
-dotnet run
-```
-
-The test console provides options to:
-- Test document analysis with different documents
-- Verify Azure Foundry connectivity
-- Test Microsoft Graph integration
-
-## Development
-
-### Setting Up Development Environment
-
-1. Install .NET 10 SDK
-2. Clone the repository
-3. Create `appsettings.Development.json` with your local configuration
-4. Run `dotnet build` from the `src` directory
-
-### Code Structure
-
-- **Controllers**: Handle HTTP requests and route them to services
-- **Services**: Contain business logic for document analysis and AI integration
-- **Models**: Define data structures for API requests/responses
 
 ## License
 
