@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
-using TestConsole;
+using TestConsole.NewFoundryAgents;
 
 var builder = new ConfigurationBuilder();
 builder.SetBasePath(Directory.GetCurrentDirectory())
@@ -12,7 +12,7 @@ IConfigurationRoot configuration = builder.Build();
 // await TestAgentClassic.RunAIFoundryTestCodeInterpreterAsync(configuration);
 // await TestAgentClassic.CleanUpAIFoundryProjectAsync(configuration);
 
-// await TestAgentNew.RunFileSearchToolTestAsync(configuration);
-await TestAgentNew.RunImageAnalysisToolTestAsync(configuration);
-// await TestAgentNew.RunFileAnalysisToolTestAsync(configuration);
-// await TestAgentNew.RunBasicAgentInfoTestAsync(configuration);
+await new FileSearchToolTest(configuration).RunAsync();
+await new ImageAnalysisToolTest(configuration).RunAsync();
+await new FileAnalysisToolTest(configuration).RunAsync();
+await new BasicAgentInfoTest(configuration).RunAsync();

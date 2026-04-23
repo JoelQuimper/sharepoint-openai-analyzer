@@ -2,6 +2,8 @@ using System.ClientModel.Primitives;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
+namespace TestConsole.Infra;
+
 public class LoggingPolicy : PipelinePolicy
 {
     private static void ProcessMessage(PipelineMessage message)
